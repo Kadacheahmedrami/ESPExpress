@@ -1,0 +1,57 @@
+# Syntax Coloring Map For ESPExpress
+
+# ===== Datatypes (KEYWORD1) =====
+ESPExpress	KEYWORD1
+Request	KEYWORD1
+Response	KEYWORD1
+Route	KEYWORD1
+HttpMethod	KEYWORD1
+
+# ===== Methods and Functions (KEYWORD2) =====
+# Core Functions
+use	KEYWORD2
+listen	KEYWORD2
+
+# HTTP Methods
+get	KEYWORD2
+post	KEYWORD2
+put	KEYWORD2
+del	KEYWORD2
+options	KEYWORD2
+all	KEYWORD2
+
+# Response Handling
+send	KEYWORD2
+sendJson	KEYWORD2
+sendFile	KEYWORD2
+status	KEYWORD2
+setHeader	KEYWORD2
+end	KEYWORD2
+
+# Middleware & Utilities
+enableCORS	KEYWORD2
+serveStatic	KEYWORD2
+render	KEYWORD2
+
+# WebSocket Functions
+ws	KEYWORD2
+onWsConnect	KEYWORD2
+onWsDisconnect	KEYWORD2
+onWsMessage	KEYWORD2
+wsLoop	KEYWORD2
+wsBroadcast	KEYWORD2
+wsBroadcastTXT	KEYWORD2
+wsSend	KEYWORD2
+wsSendTXT	KEYWORD2
+
+# Request Parsing
+getParam	KEYWORD2
+getHeader	KEYWORD2
+getQuery	KEYWORD2
+
+# ===== Constants (LITERAL1) =====
+GET	LITERAL1
+POST	LITERAL1
+PUT	LITERAL1
+DELETE	LITERAL1
+OPTIONS	LITERAL1

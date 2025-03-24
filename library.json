@@ -1,0 +1,20 @@
+{
+  "name": "ESPExpress",
+  "version": "1.0.0",
+  "description": "Express.js inspired web framework for ESP32/ESP8266",
+  "keywords": "web, server, express, middleware, routing, websocket, esp32, esp8266",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kadacheahmedrami/ESPExpress.git"
+  },
+  "authors": [
+    {
+      "name": "Kadache Ahmed Rami",
+      "email": "a_kadache@estin.dz",
+      "url": "https://github.com/kadacheahmedrami"
+    }
+  ],
+  "license": "MIT",
+  "frameworks": "arduino",
+  "platforms": ["espressif32", "espressif8266"]
+}
