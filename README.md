@@ -1,186 +1,88 @@
-# ESPExpress
+# ESPExpress - Lightweight Web Server Library for ESP32
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/kadacheahmedrami/ESPExpress)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![PlatformIO Compatible](https://img.shields.io/badge/PlatformIO-compatible-brightgreen)](https://platformio.org)
+ESPExpress is a **lightweight** and **flexible** web server library for ESP32, enabling developers to create efficient web-based applications with minimal effort. It provides an intuitive API for handling HTTP requests, serving static files, managing WebSockets, and enabling CORS support.
 
-**ESPExpress** is a lightweight, back-end C++ framework for ESP microcontrollers that mimics the popular Express.js API. Build robust web applications and APIs on your embedded devices with minimal overhead.
+## 🚀 Features
 
-## ✨ Features
+- **HTTP Request Handling**: Support for `GET`, `POST`, `PUT`, `DELETE`, and `OPTIONS` requests.
+- **Middleware Support**: Easily add global middleware functions.
+- **Static File Serving**: Serve files from SPIFFS or other storage.
+- **WebSocket Support**: Handle real-time communication with WebSockets.
+- **CORS Support**: Enable Cross-Origin Resource Sharing.
+- **Template Rendering**: Serve dynamic HTML with variable replacements.
 
-- **Express.js Inspired API:** Define routes for HTTP methods (GET, POST, PUT, DELETE, OPTIONS) using familiar syntax.
-- **Middleware Support:** Chain middleware functions for logging, authentication, and request manipulation.
-- **Static File Serving:** Serve files directly from SPIFFS/LittleFS with automatic content type detection.
-- **Template Rendering:** Create dynamic HTML pages with simple variable substitution.
-- **CORS Handling:** Built-in support for Cross-Origin Resource Sharing enables seamless API integrations.
-- **WebSocket Integration:** Create real-time applications with WebSocket connection management.
+## 📌 Installation
 
-## 🚀 Quick Start
-
-### Installation
-
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/kadacheahmedrami/ESPExpress.git
-   ```
-
-2. **Project Structure:**
-   ```
-   your_project/
-   ├── data/                      # Static files for SPIFFS
-   │   └── www/                   # Web content
-   │       ├── index.html         # Main page
-   │       ├── info.html          # Information page
-   │       └── template.html      # Template for rendering
-   │
-   ├── lib/                       # Library code
-   │   ├── ESPExpress/            # Core library files
-   │   │   ├── ESPExpress.h       # Main library header
-   │   │   └── ESPExpress.cpp     # Implementation
-   │   └── routes/                # Route modules
-   │       ├── routeExamples/
-   │       │   ├── routeExamples.h
-   │       │   └── routeExamples.cpp
-   │       └── websocket/
-   │           ├── websocket.h
-   │           └── websocket.cpp
-   └── src/                       # Demo application
-       └── main.cpp               # Example usage
-   ```
-
-3. **Upload Static Files to Flash:**
-   ```bash
-   pio run -t uploadfs
-   ```
-   This uploads your HTML files and other static content to the ESP flash memory.
-
-4. **Upload Your Application:**
-   ```bash
-   pio run -t upload
-   ```
-
-### Example Code
+Include ESPExpress in your project:
 
 ```cpp
-#include <WiFi.h>
-#include <SPIFFS.h>
 #include "ESPExpress.h"
-#include "websocket/websocket.h"          // Import WebSocket routes
-#include "routeExamples/routeExamples.h"  // Import HTTP route examples
+```
 
-const char* ssid = "Your_SSID";         // WiFi SSID
-const char* password = "Your_PASSWORD"; // WiFi password
+## 📖 Usage Example
 
-ESPExpress app(80);                   // Create server instance on port 80
+This example demonstrates how to create an ESP32 web server that controls an LED:
+
+```cpp
+#include <Arduino.h>
+#include <WiFi.h>
+#include "ESPExpress.h"
+
+const char* ssid     = "your_SSID";
+const char* password = "your_PASSWORD";
+const int ledPin = 2;
+ESPExpress app(80);
+
+void connectToWiFi() {
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+  }
+}
+
+void handleTurnOn(Request &req, Response &res) {
+  digitalWrite(ledPin, HIGH);
+  res.send("LED turned ON");
+}
+
+void handleTurnOff(Request &req, Response &res) {
+  digitalWrite(ledPin, LOW);
+  res.send("LED turned OFF");
+}
 
 void setup() {
   Serial.begin(115200);
-  delay(1000);
+  pinMode(ledPin, OUTPUT);
+  connectToWiFi();
   
-  WiFi.begin(ssid, password);         // Connect to WiFi
-  Serial.println("Connecting to WiFi...");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println();
-  Serial.print("Connected! IP address: "); 
-  Serial.println(WiFi.localIP());
-
-  if (!SPIFFS.begin(true)) {           // Mount SPIFFS
-    Serial.println("Failed to mount SPIFFS");
-    return;
-  }
+  app.get("/on", handleTurnOn);
+  app.get("/off", handleTurnOff);
   
-  app.use([](Request &req, Response &res, std::function<void()> next) { // Log request path
-    Serial.print("Request received for: "); 
-    Serial.println(req.path); 
-    next();
-  });
-  
-  app.enableCORS("*");                // Enable CORS for all origins
-  
-  registerRouteExamples(app);         // Register HTTP route examples
-  registerWebSocketRoutes(app);       // Register WebSocket routes
-  
-  Serial.println("Starting ESPExpress server...");
-  app.listen("Server is running..."); // Start the server
+  app.listen();
 }
 
-void loop() {
-  app.wsLoop();                       // Process WebSocket events
-}
+void loop() {}
 ```
 
-### Route Examples Implementation
+## 🔗 WebSocket Support
 
-Here's how routes are configured in the `routeExamples.cpp` file:
+Enable real-time WebSocket communication with:
 
 ```cpp
-#include "routeExamples.h"
-
-void registerRouteExamples(ESPExpress &app) {
-  // Serve the index.html file on the root "/"
-  app.get("/", [](Request &req, Response &res) {
-    res.sendFile("/www/index.html");
-  });
-
-  // GET route with a dynamic parameter: /user/:id
-  app.get("/user/:id", [](Request &req, Response &res) {
-    String userId = req.getParam("id");
-    res.send("<h1>User Profile</h1><p>User ID: " + userId + "</p>");
-  });
-
-  // POST route to test receiving a body payload.
-  app.post("/data", [](Request &req, Response &res) {
-    res.send("<h1>POST Data Received</h1><p>Body: " + req.body + "</p>");
-  });
-
-  // PUT route example.
-  app.put("/update", [](Request &req, Response &res) {
-    res.send("<h1>PUT Update</h1><p>Update data: " + req.body + "</p>");
-  });
-
-  // DELETE route example.
-  app.del("/delete", [](Request &req, Response &res) {
-    res.send("<h1>DELETE Request</h1><p>Resource deleted.</p>");
-  });
-
-  // OPTIONS route example (useful for CORS preflight requests).
-  app.options("/test", [](Request &req, Response &res) {
-    res.status(204).end();  // No Content response
-  });
-
-  // Template Rendering: GET /template
-  // Capture app by reference so that we can call app.render() inside the lambda.
-  app.get("/template", [&app](Request &req, Response &res) {
-    std::map<String, String> vars;
-    vars["title"] = "ESPExpress Template";
-    vars["message"] = "Hello from a rendered template!";
-    app.render(res, "/www/template.html", vars);
-  });
-
-  // Static File Serving: Map URL path "/static" to SPIFFS folder "/www"
-  app.serveStatic("/static", "/www");
-}
+app.ws("/ws", [](uint8_t num, WStype_t type, uint8_t* payload, size_t length) {
+  if (type == WStype_TEXT) {
+    Serial.printf("Client %d sent: %s\n", num, payload);
+  }
+});
 ```
 
-## 📚 Documentation
+## 🌍 CORS Support
 
-### Routing System
+Enable CORS to allow cross-origin requests:
 
-- **HTTP Routes:** Register routes using `app.get()`, `app.post()`, etc. Each route processes requests and sends responses.
-- **Middleware:** Use `app.use()` to chain middleware functions for logging, authentication, or request modification.
-- **Static Files & Templates:** Serve files with `app.serveStatic()` and generate dynamic HTML with `app.render()`.
-- **Route Parameters:** Access dynamic route parameters with `req.getParam()` (e.g., `/user/:id`).
-
-### WebSocket Integration
-
-Register WebSocket routes with `app.ws()` to handle connections, messages, and disconnections for real-time communication.
-
-### CORS Support
-
-Enable CORS with `app.enableCORS("*")` to allow cross-origin requests from any domain.
+```cpp
+app.enableCORS("*");
+```
 
 ## 🤝 Contributing
 
@@ -215,4 +117,5 @@ For support or questions:
 
 ---
 
-Happy coding with **ESPExpress**! Build amazing back-end applications on your ESP microcontrollers with ease.
+Happy coding with **ESPExpress**! Build efficient web-based applications on your ESP32 effortlessly. 🚀
+
